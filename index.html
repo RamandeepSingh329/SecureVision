@@ -1,0 +1,282 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <link rel="icon" type="image/png" href="assets/Super realistic logo.png">
+    <link rel="apple-touch-icon" href="logo.png">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>SecureVision AI - Advanced Neural Surveillance & Activity Recognition</title>
+
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;700;900&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+<header class="header">
+    <div class="dev-name">Ramandeep Singh's</div>
+    <h1 class="title">SecureVision AI</h1>
+    <p class="subtitle">Advanced Neural Surveillance & Activity Recognition.</p>
+</header>
+
+<main class="main-container">
+    <div class="camera-card" id="cam-viewport">
+        <canvas id="canvas"></canvas>
+        <div class="scan-line"></div>
+    </div>
+
+    <div class="stats-container">
+        <div class="label-card">
+            <div class="label-title">System Status</div>
+            <p id="output" class="output-status">Standby Mode</p>
+            <p id="live-clock" class="clock-display">SYNCING...</p>
+        </div>
+
+        <div id="label-container" class="prediction-box"></div>
+
+        <button type="button" class="start-btn" onclick="init()">
+            Initialize Secure Protocol
+        </button>
+    </div>
+</main>
+
+<div id="alert-popup" class="alert-popup">
+    <div class="alert-icon">🛑</div>
+    <div class="alert-content">
+        <div id="alert-title" class="alert-header">SECURITY BREACH</div>
+        <div id="alert-msg" class="alert-body">Analyzing visual data...</div>
+        <div class="alert-actions">
+            <button onclick="downloadEvidence()" class="popup-btn save-btn">
+                💾 Save Evidence
+            </button>
+            <button onclick="resolveIssue()" class="popup-btn resolve-btn">
+                Resolve
+            </button>
+        </div>
+    </div>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/@tensorflow/tfjs@1.3.1/dist/tf.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/@teachablemachine/pose@0.8/dist/teachablemachine-pose.min.js"></script>
+
+<script>
+const URL = "https://teachablemachine.withgoogle.com/models/jLeJTw1rQ/";
+let model, webcam, ctx, labelContainer, maxPredictions;
+
+let isIssueResolved = false;
+let lastVoiceTime = 0;
+let evidenceCapture = null;
+
+const VOICE_INTERVAL = 5000;
+
+// Evidence burst system
+let evidenceFrames = [];
+let captureInProgress = false;
+const MAX_FRAMES = 6;
+
+async function init() {
+    const modelURL = URL + "model.json";
+    const metadataURL = URL + "metadata.json";
+
+    model = await tmPose.load(modelURL, metadataURL);
+    maxPredictions = model.getTotalClasses();
+
+    webcam = new tmPose.Webcam(640, 640, true);
+    await webcam.setup();
+    await webcam.play();
+    window.requestAnimationFrame(loop);
+
+    const canvas = document.getElementById("canvas");
+    ctx = canvas.getContext("2d");
+
+    labelContainer = document.getElementById("label-container");
+    labelContainer.innerHTML = "";
+    for (let i = 0; i < maxPredictions; i++) {
+        labelContainer.appendChild(document.createElement("div"));
+    }
+
+    document.getElementById("output").innerText = "Monitoring Active";
+}
+
+async function loop() {
+    webcam.update();
+    await predict();
+    window.requestAnimationFrame(loop);
+}
+
+async function predict() {
+    const { pose, posenetOutput } = await model.estimatePose(webcam.canvas);
+    const prediction = await model.predict(posenetOutput);
+
+    document.getElementById("live-clock").innerText =
+        "SYNCED: " + new Date().toLocaleTimeString([], { hour12: false });
+
+    let activeThreat = null;
+    let highestProb = 0;
+
+    for (let i = 3; i < maxPredictions; i++) {
+        if (prediction[i].probability > 0.98 && prediction[i].probability > highestProb) {
+            highestProb = prediction[i].probability;
+            activeThreat = prediction[i].className;
+        }
+    }
+
+    if (activeThreat && !isIssueResolved) {
+        captureFrame(activeThreat);
+        triggerAlert(activeThreat);
+    } else if (!activeThreat) {
+        clearAlert();
+    }
+
+    for (let i = 0; i < maxPredictions; i++) {
+        const val = (prediction[i].probability * 100).toFixed(0);
+        labelContainer.childNodes[i].innerHTML =
+            `<span>${prediction[i].className}</span>
+             <span style="font-weight:bold;color:${val > 80 ? '#ff4d4d' : '#00ffcc'}">${val}%</span>`;
+    }
+
+    drawPose(pose);
+}
+
+// 🔥 Burst Capture
+function captureFrame(threatType) {
+    if (captureInProgress) return;
+    captureInProgress = true;
+    evidenceFrames = [];
+
+    let count = 0;
+
+    const interval = setInterval(() => {
+        const base = document.getElementById("canvas");
+        const temp = document.createElement("canvas");
+        const tctx = temp.getContext("2d");
+
+        temp.width = base.width;
+        temp.height = base.height;
+        tctx.drawImage(base, 0, 0);
+
+        const ts = new Date().toLocaleTimeString();
+
+        tctx.fillStyle = "rgba(0,0,0,0.6)";
+        tctx.fillRect(0, temp.height - 60, temp.width, 60);
+
+        tctx.font = "bold 18px Inter";
+        tctx.fillStyle = "#ff3333";
+        tctx.fillText(`⚠ ${threatType.toUpperCase()}`, 20, temp.height - 30);
+
+        tctx.font = "14px Inter";
+        tctx.fillStyle = "#00ffcc";
+        tctx.fillText(`FRAME ${count + 1} • ${ts}`, 20, temp.height - 10);
+
+        evidenceFrames.push(temp);
+        count++;
+
+        if (count >= MAX_FRAMES) {
+            clearInterval(interval);
+            generateCollage(threatType);
+            captureInProgress = false;
+        }
+    }, 300);
+}
+
+// 🧩 Collage Generator
+function generateCollage(threatType) {
+    const cols = 3;
+    const rows = Math.ceil(evidenceFrames.length / cols);
+
+    const w = evidenceFrames[0].width;
+    const h = evidenceFrames[0].height;
+
+    const collage = document.createElement("canvas");
+    const cctx = collage.getContext("2d");
+
+    collage.width = w * cols;
+    collage.height = h * rows + 80;
+
+    cctx.fillStyle = "#050b12";
+    cctx.fillRect(0, 0, collage.width, collage.height);
+
+    evidenceFrames.forEach((f, i) => {
+        const x = (i % cols) * w;
+        const y = Math.floor(i / cols) * h;
+        cctx.drawImage(f, x, y);
+    });
+
+    cctx.fillStyle = "rgba(0,0,0,0.85)";
+    cctx.fillRect(0, collage.height - 80, collage.width, 80);
+
+    cctx.font = "bold 26px Inter";
+    cctx.fillStyle = "#ff3333";
+    cctx.fillText(`SECURITY INCIDENT: ${threatType.toUpperCase()}`, 20, collage.height - 45);
+
+    cctx.font = "14px Inter";
+    cctx.fillStyle = "#00ffcc";
+    cctx.fillText(
+        `AI MULTI-FRAME EVIDENCE • ${new Date().toLocaleString()} • SecureVision AI`,
+        20,
+        collage.height - 20
+    );
+
+    evidenceCapture = collage.toDataURL("image/png");
+}
+
+// 🚨 Alerts
+function triggerAlert(type) {
+    document.getElementById("output").innerHTML = `⚠ ${type.toUpperCase()} DETECTED`;
+    document.getElementById("output").style.color = "#ff4d4d";
+    document.getElementById("cam-viewport").classList.add("breach-active");
+
+    document.getElementById("alert-title").innerText = type.toUpperCase();
+    document.getElementById("alert-msg").innerHTML =
+        `Threat detected at <b>${new Date().toLocaleTimeString()}</b><br>Protocol 16-Alpha engaged.`;
+
+    document.getElementById("alert-popup").classList.add("show");
+
+    if (Date.now() - lastVoiceTime > VOICE_INTERVAL) {
+        lastVoiceTime = Date.now();
+        speakAlert(type);
+    }
+}
+
+function speakAlert(type) {
+    speechSynthesis.cancel();
+    const msg = new SpeechSynthesisUtterance(`Warning. ${type} detected. Evidence recorded.`);
+    msg.rate = 0.9;
+    speechSynthesis.speak(msg);
+}
+
+function clearAlert() {
+    if (!isIssueResolved) {
+        document.getElementById("output").innerText = "Monitoring Active";
+        document.getElementById("output").style.color = "#00ffcc";
+        document.getElementById("cam-viewport").classList.remove("breach-active");
+    }
+}
+
+function resolveIssue() {
+    isIssueResolved = true;
+    document.getElementById("alert-popup").classList.remove("show");
+    document.getElementById("output").innerText = "Protocol Resolved";
+    setTimeout(() => isIssueResolved = false, 8000);
+}
+
+function downloadEvidence() {
+    if (!evidenceCapture) return;
+    const link = document.createElement("a");
+    link.download = `SECUREVISION_EVIDENCE_${Date.now()}.png`;
+    link.href = evidenceCapture;
+    link.click();
+}
+
+function drawPose(pose) {
+    canvas.width = canvas.clientWidth;
+    canvas.height = canvas.clientHeight;
+    ctx.drawImage(webcam.canvas, 0, 0, canvas.width, canvas.height);
+    if (pose) {
+        tmPose.drawKeypoints(pose.keypoints, 0.5, ctx);
+        tmPose.drawSkeleton(pose.keypoints, 0.5, ctx);
+    }
+}
+</script>
+
+</body>
+</html>

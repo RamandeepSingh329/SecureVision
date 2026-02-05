@@ -1,0 +1,338 @@
+/* ====================================================
+   OXYGENOS 16 DESIGN SYSTEM - PREMIUM UPDATE
+   Design Language: Aquamorphic, Translucent, Fluid, Interactive
+==================================================== */
+
+:root {
+    --primary-blue: #007aff;
+    --secondary-teal: #00ffe7;
+    --alert-red: #ff3b30;
+    --bg-dark: #050505;
+    --surface-glass: rgba(28, 28, 30, 0.65);
+    --surface-glass-bright: rgba(255, 255, 255, 0.06);
+    --border-light: rgba(255, 255, 255, 0.12);
+    --text-main: #ffffff;
+    --text-dim: rgba(255, 255, 255, 0.65);
+
+    --ease-out-expo: cubic-bezier(0.16, 1, 0.3, 1);
+    --ease-in-out-smooth: cubic-bezier(0.33, 1, 0.68, 1);
+
+    --shadow-card: 0 40px 80px -20px rgba(0,0,0,0.6);
+    --shadow-glow: 0 0 60px rgba(0,122,255,0.25);
+}
+
+/* ====================================================
+   1. GLOBAL RESET & BASE
+==================================================== */
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+    transition: all 0.4s var(--ease-in-out-smooth);
+}
+
+body {
+    background-color: var(--bg-dark);
+    font-family: 'Inter', -apple-system, sans-serif;
+    color: var(--text-main);
+    min-height: 100vh;
+    overflow-x: hidden;
+    -webkit-font-smoothing: antialiased;
+    background-image: 
+        radial-gradient(at 0% 0%, rgba(0, 122, 255, 0.12) 0px, transparent 40%),
+        radial-gradient(at 100% 100%, rgba(26, 115, 255, 0.08) 0px, transparent 40%);
+}
+
+/* ====================================================
+   2. HERO SECTION
+==================================================== */
+.header {
+    padding: clamp(35px, 6vw, 70px) 20px 30px;
+    text-align: center;
+    position: relative;
+    z-index: 10;
+    overflow: hidden;
+    background-image: radial-gradient(circle at 20% 20%, rgba(0, 122, 255, 0.06), transparent 60%),
+                      radial-gradient(circle at 80% 80%, rgba(0, 255, 231, 0.04), transparent 60%);
+    background-repeat: no-repeat;
+    background-size: cover;
+    animation: oxygenEntrance 1s var(--ease-out-expo);
+}
+
+.dev-name {
+    font-size: clamp(1.2rem, 2.5vw, 1.6rem);
+    font-weight: 900;
+    letter-spacing: 1.5px;
+    line-height: 1.1;
+    margin-bottom: 6px;
+    text-transform: uppercase;
+    background: linear-gradient(135deg, var(--primary-blue), var(--secondary-teal));
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    text-shadow: 0 2px 12px rgba(0,0,0,0.35);
+}
+
+.title {
+    font-size: clamp(1.8rem, 4vw, 2.4rem);
+    font-weight: 600;
+    color: rgba(255,255,255,0.85);
+    letter-spacing: 0.2px;
+    line-height: 1.3;
+    margin-bottom: 4px;
+}
+
+.subtitle {
+    font-size: clamp(0.95rem, 1.8vw, 1.1rem);
+    color: rgba(255,255,255,0.65);
+    max-width: 600px;
+    margin: 0 auto;
+    font-weight: 400;
+    line-height: 1.5;
+    letter-spacing: 0.2px;
+}
+
+.header::after {
+    content: '';
+    display: block;
+    width: 80px;
+    height: 2px;
+    margin: 12px auto 0;
+    border-radius: 2px;
+    background: linear-gradient(90deg, var(--primary-blue), var(--secondary-teal));
+    animation: pulseLine 2s infinite alternate;
+    opacity: 0.85;
+}
+
+@keyframes pulseLine {
+    0% { transform: scaleX(0.9); opacity: 0.7; }
+    50% { transform: scaleX(1.05); opacity: 1; }
+    100% { transform: scaleX(0.9); opacity: 0.7; }
+}
+
+/* ====================================================
+   3. MAIN LAYOUT
+==================================================== */
+.main-container {
+    display: flex;
+    flex-wrap: wrap;
+    width: 92%;
+    max-width: 1240px;
+    margin: 0 auto 80px;
+    gap: 32px;
+    align-items: flex-start;
+}
+
+/* ====================================================
+   4. CAMERA VIEWPORT
+==================================================== */
+.camera-card {
+    flex: 1 1 60%;
+    position: relative;
+    border-radius: 40px;
+    background: var(--surface-glass);
+    backdrop-filter: blur(30px) saturate(150%);
+    -webkit-backdrop-filter: blur(30px) saturate(150%);
+    border: 1px solid var(--border-light);
+    overflow: hidden;
+    box-shadow: var(--shadow-card);
+    will-change: transform;
+    transition: transform 0.3s ease, box-shadow 0.3s ease, border 0.3s ease;
+}
+
+.camera-card:hover {
+    transform: scale(1.01);
+    box-shadow: 0 50px 100px -20px rgba(0,0,0,0.65);
+}
+
+#canvas {
+    width: 100%;
+    display: block;
+    aspect-ratio: 16/9;
+    object-fit: cover;
+    filter: brightness(1.05) contrast(1.02);
+    border-radius: 40px;
+}
+
+/* ====================================================
+   5. STATS & WIDGETS
+==================================================== */
+.stats-container {
+    flex: 1 1 34%;
+    display: flex;
+    flex-direction: column;
+    gap: 24px;
+}
+
+.label-card, .prediction-box {
+    background: var(--surface-glass);
+    backdrop-filter: blur(40px);
+    -webkit-backdrop-filter: blur(40px);
+    border-radius: 32px;
+    padding: 28px;
+    border: 1px solid var(--border-light);
+    box-shadow: 0 20px 40px rgba(0,0,0,0.25);
+    will-change: transform;
+    transition: transform 0.3s ease, box-shadow 0.3s ease, border 0.3s ease;
+}
+
+.label-card:hover, .prediction-box:hover {
+    transform: translateY(-4px);
+    box-shadow: 0 28px 50px rgba(0,122,255,0.35);
+}
+
+.label-title {
+    text-transform: uppercase;
+    font-size: 0.7rem;
+    letter-spacing: 2.5px;
+    color: var(--primary-blue);
+    margin-bottom: 12px;
+    font-weight: 800;
+    opacity: 0.9;
+}
+
+.output-status {
+    font-size: clamp(1.4rem, 3vw, 2rem);
+    font-weight: 700;
+    color: #fff;
+    margin-bottom: 4px;
+    text-shadow: 0 2px 8px rgba(0,0,0,0.4);
+}
+
+.prediction-box div {
+    background: var(--surface-glass-bright);
+    margin-bottom: 12px;
+    border-radius: 20px;
+    padding: 18px 22px;
+    border: 1px solid transparent;
+    font-size: 1rem;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    transition: transform 0.3s ease, background 0.3s ease, border 0.3s ease;
+}
+
+.prediction-box div:hover {
+    background: rgba(255,255,255,0.1);
+    border-color: rgba(255,255,255,0.1);
+    transform: translateX(6px) scale(1.02);
+}
+
+.prediction-box div:last-child { margin-bottom: 0; }
+
+/* ====================================================
+   6. PRIMARY ACTION BUTTON
+==================================================== */
+.start-btn {
+    width: 100%;
+    padding: 22px;
+    border-radius: 28px;
+    background: #ffffff;
+    color: #000;
+    font-weight: 700;
+    font-size: 1.15rem;
+    border: none;
+    cursor: pointer;
+    box-shadow: 0 20px 40px rgba(255,255,255,0.08);
+    position: relative;
+    overflow: hidden;
+    transition: all 0.3s ease;
+}
+
+.start-btn:hover {
+    background: var(--primary-blue);
+    color: #fff;
+    box-shadow: 0 25px 50px rgba(0,122,255,0.35);
+}
+
+/* ====================================================
+   7. ALERT POPUP (Premium Upgraded)
+==================================================== */
+.alert-popup {
+    position: fixed;
+    top: 30px;
+    right: -450px;
+    width: 360px;
+    background: rgba(255,59,48,0.9);
+    backdrop-filter: blur(25px);
+    border-radius: 28px;
+    padding: 24px;
+    border: 1px solid rgba(255,255,255,0.2);
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+    color: white;
+    z-index: 1000;
+    box-shadow: 0 30px 60px rgba(0,0,0,0.5);
+    transition: all 0.6s var(--ease-out-expo);
+    transform: translateX(50px) scale(0.95);
+    opacity: 0;
+}
+
+.alert-popup.show {
+    right: 30px;
+    transform: translateX(0) scale(1);
+    opacity: 1;
+    animation: popupGlow 0.8s ease forwards;
+}
+
+@keyframes popupGlow {
+    0% { box-shadow: 0 0 20px rgba(255,59,48,0.6); }
+    50% { box-shadow: 0 0 45px rgba(255,59,48,0.8); }
+    100% { box-shadow: 0 0 30px rgba(255,59,48,0.7); }
+}
+
+.popup-btn {
+    border-radius: 14px;
+    padding: 10px 18px;
+    font-weight: 600;
+    font-size: 0.95rem;
+    cursor: pointer;
+    transition: all 0.25s ease;
+}
+
+.save-btn {
+    background: rgba(255,255,255,0.2);
+    color: white;
+    border: 1px solid white;
+}
+
+.save-btn:hover {
+    background: rgba(255,255,255,0.35);
+}
+
+.resolve-btn {
+    background: white;
+    color: var(--alert-red);
+    border: none;
+}
+
+.resolve-btn:hover {
+    background: var(--alert-red);
+    color: white;
+}
+
+/* ====================================================
+   8. RESPONSIVE ADAPTATIONS
+==================================================== */
+@media (max-width: 1024px) {
+    .main-container { flex-direction: column; }
+    .camera-card, .stats-container { flex: 1 1 100%; width: 100%; }
+    #canvas { aspect-ratio: 4/3; }
+}
+
+@media (max-width: 768px) {
+    .header { padding: clamp(25px, 5vw, 50px) 14px 20px; }
+    .dev-name { font-size: clamp(0.95rem, 2vw, 1.2rem); }
+    .title { font-size: clamp(1.4rem, 2.5vw, 1.8rem); }
+    .subtitle { font-size: clamp(0.85rem, 1.4vw, 0.9rem); }
+}
+
+@media (max-width: 480px) {
+    .header { padding: 20px 12px 16px; }
+    .dev-name { font-size: 1rem; }
+    .title { font-size: 1.5rem; letter-spacing: -0.2px; line-height: 1.2; }
+    .subtitle { font-size: 0.85rem; line-height: 1.4; }
+    .camera-card { border-radius: 28px; }
+    .label-card { border-radius: 24px; padding: 20px; }
+    .start-btn { padding: 18px; font-size: 1rem; border-radius: 24px; }
+}
